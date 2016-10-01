@@ -1,0 +1,54 @@
+
+class Dchan
+  def run(script)
+    keys = script.downcase.gsub(/\W/,'').split('').uniq.sort
+    @cipher = (keys.zip((1..keys.count).to_a)).to_h
+    instance_eval(script.downcase)
+  end
+
+  attr_reader :cipher
+
+  def method_missing(m)
+    DSLNumber.decode(m, cipher)
+  end
+
+end
+
+class DSLNumber
+  def self.decode(input, cipher)
+    data = input.to_s.split('').map{|x| cipher[x]}.join.to_i
+    new(data, cipher)
+  end
+
+  def initialize(data, cipher)
+    @cipher = cipher
+    @data = data
+    puts "init :: #{data}"
+  end
+
+  attr_reader :data, :cipher
+
+  def +(value)
+    sum = self.to_i + value.to_i
+    puts "#{self.to_i} + #{value.to_i}  = #{sum}"
+    DSLNumber.new(sum, cipher)
+  end
+
+  alias ^ **
+
+  def **(value)
+    pow = self.to_i ** value.to_i
+    puts "#{self.to_i} ** #{value.to_i}  = #{pow}"
+    DSLNumber.new(pow, cipher)
+  end
+
+  def ==(value)
+    puts " #{self.to_i} == #{value.to_i}"
+    self.to_i == value.to_i
+  end
+
+  def to_i
+    data.to_i
+  end
+
+end
